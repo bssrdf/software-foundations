@@ -1,5 +1,5 @@
 (** * Basics: Functional Programming *)
- 
+
 (* $Date: 2012-07-21 13:38:33 -0400 (Sat, 21 Jul 2012) $ *)
 
 (* ###################################################################### *)
@@ -99,7 +99,7 @@ Proof. simpl. reflexivity.  Qed.
     languages.  Indeed, this is one of the main uses for which Coq was
     developed.  We won't have space to dig further into this topic,
     but more information can be found in the Coq'Art book by Bertot
-    and Castéran, as well as the Coq reference manual. *)
+    and Cast\u00e9ran, as well as the Coq reference manual. *)
 
 (* ###################################################################### *)
 (** ** Booleans *)
@@ -179,33 +179,33 @@ Definition admit {T: Type} : T.  Admitted.
     its inputs are [false]. *)
 
 Definition nandb (b1:bool) (b2:bool) : bool :=
-  (* FILL IN HERE *) admit.
+  negb (andb b1 b2).
 
 (** Remove "[Admitted.]" and fill in each proof with 
     "[Proof. simpl. reflexivity. Qed.]" *)
 
 Example test_nandb1:               (nandb true false) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_nandb2:               (nandb false false) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_nandb3:               (nandb false true) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_nandb4:               (nandb true true) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 (** [] *)
 
 (** **** Exercise: 1 star (andb3) *)
 Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool :=
-  (* FILL IN HERE *) admit.
+  andb b1 (andb b2 b3).
 
 Example test_andb31:                 (andb3 true true true) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_andb32:                 (andb3 false true true) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_andb33:                 (andb3 true false true) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_andb34:                 (andb3 true true false) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 (** [] *)
 
 (* ###################################################################### *)
@@ -436,12 +436,15 @@ Proof. simpl. reflexivity.  Qed.
     Translate this into Coq. *)
 
 Fixpoint factorial (n:nat) : nat := 
-(* FILL IN HERE *) admit.
+  match n with
+    | O => 1
+    | S n' => n * (factorial n')
+  end.
 
 Example test_factorial1:          (factorial 3) = 6.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_factorial2:          (factorial 5) = (mult 10 12).
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 (** [] *)
 
 (** We can make numerical expressions a little easier to read and
@@ -526,14 +529,14 @@ Proof. simpl. reflexivity.  Qed.
     simple, elegant solution for which [simpl] suffices. *)
 
 Definition blt_nat (n m : nat) : bool :=
-  (* FILL IN HERE *) admit.
+  andb (ble_nat n m) (negb (beq_nat n m)).
 
 Example test_blt_nat1:             (blt_nat 2 2) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_blt_nat2:             (blt_nat 2 4) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_blt_nat3:             (blt_nat 4 2) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 (** [] *)
 
 (* ###################################################################### *)
@@ -595,11 +598,18 @@ Proof.
 
 (* Eval simpl in (forall n:nat, n + 0 = n). *)
 
+Eval simpl in (forall n:nat, n + 0 = n).
+(* = forall n:nat, n + 0 = n *)
+
 (** What about this one? *)
 
 (* Eval simpl in (forall n:nat, 0 + n = n). *)
 
+Eval simpl in (forall n:nat, 0 + n = n).
+(* = forall n:nat n = n *)
+
 (** Explain the difference.  [] *)
+(* because of the implementation of [plus] do a pattern matching on the first  argument *)
 
 (* ###################################################################### *)
 (** * The [intros] Tactic *)
@@ -682,7 +692,12 @@ Proof.
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o.
+  intros H.
+  rewrite -> H.
+  intros H'.
+  rewrite -> H'.
+  reflexivity. Qed.
 (** [] *)
 
 (** The [Admitted] command tells Coq that we want to give up
@@ -710,7 +725,10 @@ Proof.
 Theorem mult_1_plus : forall n m : nat,
   (1 + n) * m = m + (n * m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  rewrite -> plus_1_l.
+  simpl.
+  reflexivity. Qed.
 (** [] *)
 
 (* ###################################################################### *)
@@ -794,7 +812,10 @@ Proof.
 Theorem zero_nbeq_plus_1 : forall n : nat,
   beq_nat 0 (n + 1) = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. destruct n.
+    reflexivity.
+    reflexivity.
+Qed.
 (** [] *)
 
 (* ###################################################################### *)
@@ -880,7 +901,18 @@ Proof.
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c H.
+  destruct c.
+  Case "c = true".
+    reflexivity.
+  Case "c = false".
+    rewrite <- H.
+    destruct b.
+    SCase "b = true".
+      reflexivity.
+    SCase "b = false".
+      reflexivity.
+Qed.
 (** [] *)
 
 (** There are no hard and fast rules for how proofs should be
@@ -988,17 +1020,49 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite -> IHn'.
+    reflexivity.
+Qed.
 
 Theorem plus_n_Sm : forall n m : nat, 
   S (n + m) = n + (S m).
 Proof. 
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite -> IHn'.
+    reflexivity.
+Qed.
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [| n'].
+  Case "n = 0".
+    intro m.
+    rewrite -> plus_0_r.
+    reflexivity.
+  Case "n = S n'".
+    intro m.
+    simpl.
+    rewrite -> IHn'.
+    induction m as [| m'].
+    SCase "m = 0".
+      reflexivity.
+    SCase "m = S m'".
+      simpl.
+      rewrite -> IHm'.
+      reflexivity.
+Qed.
 (** [] *)
 
 Fixpoint double (n:nat) :=
@@ -1010,14 +1074,22 @@ Fixpoint double (n:nat) :=
 (** **** Exercise: 2 stars (double_plus) *)
 Lemma double_plus : forall n, double n = n + n .
 Proof.  
-  (* FILL IN HERE *) Admitted.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite -> IHn'.
+    rewrite -> plus_n_Sm.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star (destruct_induction) *)
 (** Briefly explain the difference between the tactics
     [destruct] and [induction].  
 
-(* FILL IN HERE *)
+(* [induction] will add in an assumption to the context *)
 
 *)
 (** [] *)
@@ -1127,7 +1199,7 @@ Proof.
 
 (** Theorem: Addition is commutative.
  
-    Proof: (* FILL IN HERE *)
+    Proof: (* SKIPPED *)
 []
 *)
 
@@ -1138,7 +1210,7 @@ Proof.
  
     Theorem: [true = beq_nat n n] for any [n].
     
-    Proof: (* FILL IN HERE *)
+    Proof: (* SKIPPED *)
 []
  *)
 
@@ -1146,7 +1218,14 @@ Proof.
 Theorem beq_nat_refl : forall n : nat,
   true = beq_nat n n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n'].
+  SCase "n = 0".
+    reflexivity.
+  SCase "n = S n'".
+    simpl.
+    rewrite <- IHn'.
+    reflexivity.
+Qed.
 (** [] *)
 
 
@@ -1233,7 +1312,21 @@ Proof.
 Theorem plus_swap : forall n m p : nat, 
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  assert (H1: n + (m + p) = (n + m) + p).
+    rewrite <- plus_assoc.
+    reflexivity.
+  assert (H2: m + (n + p) = (m + n) + p).
+    rewrite <- plus_assoc.
+    reflexivity.
+  assert (H3: n + m = m + n).
+    rewrite <- plus_comm.
+    reflexivity.
+  rewrite -> H1.
+  rewrite -> H2.
+  rewrite -> H3.
+  reflexivity.
+Qed.
 
 
 (** Now prove commutativity of multiplication.  (You will probably
@@ -1244,14 +1337,45 @@ Proof.
 Theorem mult_comm : forall m n : nat,
  m * n = n * m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction m as [| m'].
+  Case "m = 0".
+    simpl.
+    induction n as [| n'].
+    SCase "n = 0".
+      reflexivity.
+    SCase "n = S n'".
+      simpl.
+      rewrite <- IHn'.
+      reflexivity.
+  Case "m = m'".
+    intros n.
+    simpl.
+    rewrite -> IHm'.
+    induction n as [| n'].
+    SCase "n = 0".
+      reflexivity.
+    SCase "n = S n'".
+      simpl.
+      rewrite -> plus_swap.
+      rewrite -> IHn'.
+      reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (evenb_n__oddb_Sn) *)
 Theorem evenb_n__oddb_Sn : forall n : nat,
   evenb n = negb (evenb (S n)).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite -> IHn'.
+    simpl.
+    rewrite -> negb_involutive.
+    reflexivity.
+Qed.
 (** [] *)
 
 (* ###################################################################### *)
@@ -1268,32 +1392,68 @@ Proof.
 
 Theorem ble_nat_refl : forall n:nat,
   true = ble_nat n n.
+(* induction *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite <- IHn'.
+    reflexivity.
+Qed.
 
 Theorem zero_nbeq_S : forall n:nat,
   beq_nat 0 (S n) = false.
+(* simpl *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
+(* destruct *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  destruct b.
+  Case "b = false".
+    reflexivity.
+  Case "b = true".
+    reflexivity.
+Qed.
 
 Theorem plus_ble_compat_l : forall n m p : nat, 
   ble_nat n m = true -> ble_nat (p + n) (p + m) = true.
+(* induction *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  induction p as [| p'].
+  Case "p = 0".
+    simpl.
+    intro H.
+    rewrite -> H.
+    reflexivity.
+  Case "p = S p'".
+    simpl.
+    apply IHp'.
+Qed.
 
 Theorem S_nbeq_0 : forall n:nat,
   beq_nat (S n) 0 = false.
+(* simpl *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
+(* simpl *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  simpl.
+  intro n.
+  rewrite -> plus_0_r.
+  reflexivity.
+Qed.
 
 Theorem all3_spec : forall b c : bool,
     orb
@@ -1301,18 +1461,53 @@ Theorem all3_spec : forall b c : bool,
       (orb (negb b)
                (negb c))
   = true.
+(* destruct *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  destruct b.
+  Case "b = true".
+    destruct c.
+    reflexivity.
+    reflexivity.
+  Case "b = false".
+    destruct c.
+    reflexivity.
+    reflexivity.
+Qed.
 
 Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
+(* induction *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  rewrite -> mult_comm with (m := (n + m)) (n := p).
+  rewrite -> mult_comm with (m := n) (n := p).
+  rewrite -> mult_comm with (m := m) (n := p).
+  induction p as [| p'].
+  Case "p = 0".
+    reflexivity.
+  Case "p = S p'".
+    simpl.
+    rewrite -> IHp'.
+    rewrite <- plus_assoc with (n := n) (m := m) (p := (p' * n + p' * m)).
+    rewrite <- plus_assoc with (n := n) (m := p' * n) (p := (m + p' * m)).
+    rewrite <- plus_swap with (n := m) (m := p' * n) (p := p' * m).
+    reflexivity.
+Qed.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
+(* induction *)
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite -> IHn'.
+    rewrite -> mult_plus_distr_r.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (plus_swap') *)
@@ -1330,7 +1525,14 @@ Proof.
 Theorem plus_swap' : forall n m p : nat, 
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  rewrite -> plus_assoc.
+  replace (n + m) with (m + n).
+  rewrite -> plus_assoc.
+  reflexivity.
+  rewrite -> plus_comm.
+  reflexivity.
+Qed.
 (** [] *)
 
 
@@ -1410,7 +1612,40 @@ Qed.
         converting it to unary and then incrementing.  
 *)
 
-(* FILL IN HERE *)
+Inductive bin : Type :=
+  | Zero : bin
+  | Twice : bin -> bin
+  | STwice : bin -> bin.
+
+Fixpoint bin_inc (n : bin) : bin :=
+  match n with
+    | Zero => STwice Zero
+    | Twice n' => STwice n'
+    | STwice n' => Twice (bin_inc n')
+  end.
+
+Fixpoint bin_to_nat (n : bin) : nat :=
+  match n with
+    | Zero => O
+    | Twice n' => let m := bin_to_nat n' in m + m
+    | STwice n' => let m := bin_to_nat n' in S (m + m)
+  end.
+
+Theorem bin_inc_to_nat_commute :
+  forall (n : bin), bin_to_nat (bin_inc n) = S (bin_to_nat n).
+Proof.
+  induction n as [| n' | n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = 2 * n'".
+    reflexivity.
+  Case "n = 2 * n' + 1".
+    simpl.
+    rewrite -> IHn'.
+    simpl.
+    rewrite <- plus_n_Sm.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars (binary_inverse) *)
@@ -1435,7 +1670,44 @@ Qed.
         it.
 *)
 
-(* FILL IN HERE *)
+Fixpoint nat_to_bin (n : nat) : bin :=
+  match n with
+    | O => Zero
+    | S n' => bin_inc (nat_to_bin n')
+  end.
+
+Theorem nat_to_bin_to_nat :
+  forall (n : nat), bin_to_nat (nat_to_bin n) = n.
+Proof.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite -> bin_inc_to_nat_commute.
+    rewrite -> IHn'.
+    reflexivity.
+Qed.
+
+(* There is more than one representation for (O : nat) in bin,
+ * i.e. nat_to_bin (bin_to_nat (Twice Zero)) != Twice Zero *)
+
+Fixpoint normalize (n : bin) : bin :=
+  match n with
+    | Zero => Zero
+    | Twice n' =>
+        match normalize n' with
+          | Zero => Zero
+          | n'' => Twice n''
+        end
+    | STwice n' => STwice (normalize n')
+  end.
+
+Theorem bin_to_nat_to_bin :
+  forall (n : bin), nat_to_bin (bin_to_nat n) = normalize n.
+Proof.
+  (* TODO *)
+Admitted.
 
 (** **** Exercise: 2 stars, optional (decreasing) *)
 (** The requirement that some argument to each function be
@@ -1450,6 +1722,10 @@ Qed.
     _does_ terminate on all inputs, but that Coq will _not_ accept
     because of this restriction. *)
 
-(* FILL IN HERE *)
+(*
+Fixpoint func (n : nat) : nat :=
+  if ble_nat 100 n then 0 else
+    n + func (S n).
+*)
 (** [] *)
 
