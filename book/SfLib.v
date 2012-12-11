@@ -177,7 +177,12 @@ Theorem multi_trans :
       multi R y z ->
       multi R x z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X R x y z G H.
+  multi_cases (induction G) Case.
+    Case "multi_refl". assumption.
+    Case "multi_step".
+      apply multi_step with y. assumption.
+      apply IHG. assumption.  Qed.
 
 (* Identifiers and polymorphic partial maps. *)
 Inductive id : Type := 
