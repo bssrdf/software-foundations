@@ -182,14 +182,16 @@ Definition test_ceval (st:state) (c:com) :=
    your solution satisfies the test that follows. *)
 
 Definition pup_to_n : com := 
-  (* FILL IN HERE *) admit.
+  Y ::= AId X;
+  WHILE BLe (ANum 1) (AId X) DO
+    X ::= AMinus (AId X) (ANum 1);
+    Y ::= APlus (AId Y) (AId X)
+  END.
 
-(* 
 Example pup_to_n_1 : 
   test_ceval (update empty_state X 5) pup_to_n
   = Some (0, 15, 0).
 Proof. reflexivity. Qed.
-*)
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (peven) *)
@@ -197,7 +199,21 @@ Proof. reflexivity. Qed.
     sets [Z] to [1] otherwise.  Use [ceval_test] to test your
     program. *)
 
-(* FILL IN HERE *)
+Definition peven : com :=
+  Z ::= (AId X);
+  WHILE BLe (ANum 2) (AId Z) DO
+    Z ::= AMinus (AId Z) (ANum 2)
+  END.
+
+Example peven_1 :
+  test_ceval (update empty_state X 5) peven
+  = Some (5, 0, 1).
+Proof. reflexivity. Qed.
+
+Example peven_2 :
+  test_ceval (update empty_state X 6) peven
+  = Some (6, 0, 0).
+Proof. reflexivity. Qed.
 (** [] *)
 
 (* ################################################################ *)
@@ -271,7 +287,7 @@ Proof.
     the main ideas to a human reader; do not simply transcribe the
     steps of the formal proof.
 
-(* FILL IN HERE *)
+(* SKIPPED *)
 []
 *)
 
@@ -331,9 +347,53 @@ Theorem ceval__ceval_step: forall c st st',
       c / st || st' ->
       exists i, ceval_step st c i = Some st'.
 Proof. 
-  intros c st st' Hce.
-  ceval_cases (induction Hce) Case.
-  (* FILL IN HERE *) Admitted.
+  com_cases (induction c) Case;
+    intros;
+    try (inversion H; subst; exists 1; reflexivity).
+  Case ";".
+    inversion H. clear H. subst.
+    assert (H1': exists i, ceval_step st c1 i = Some st'0).
+      apply IHc1. clear IHc1. apply H2. clear H2.
+    assert (H2': exists i, ceval_step st'0 c2 i = Some st').
+      apply IHc2. clear IHc2. apply H5. clear H5.
+    inversion H1' as [ x H1 ]. clear H1'.
+    inversion H2' as [ y H2 ]. clear H2'.
+    exists (S (x + y)). remember (x + y) as i. simpl.
+    apply ceval_step_more with (i2 := i) in H1; try omega.
+    apply ceval_step_more with (i2 := i) in H2; try omega.
+    rewrite H1. rewrite H2. reflexivity.
+  Case "IFB".
+    inversion H; clear H; subst.
+    SCase "E_IfTrue".
+      assert (H1': exists i, ceval_step st c1 i = Some st').
+        apply IHc1. clear IHc1. apply H6. clear H6.
+      inversion H1' as [ i H1 ]. clear H1'.
+      exists (S i). simpl. rewrite H5. assumption.
+    SCase "E_IfFalse".
+      assert (H2': exists i, ceval_step st c2 i = Some st').
+        apply IHc2. clear IHc2. apply H6. clear H6.
+      inversion H2' as [ i H2 ]. clear H2'.
+      exists (S i). simpl. rewrite H5. assumption.
+  Case "WHILE".
+    remember (WHILE b DO c END) as whilec.
+    generalize dependent c.
+    ceval_cases (induction H) SCase; intros;
+      inversion Heqwhilec; clear Heqwhilec; subst.
+    SCase "E_WhileEnd".
+      exists 1. simpl. rewrite H. reflexivity.
+    SCase "E_WhileLoop".
+      assert (Hx': exists i, ceval_step st c i = Some st').
+        apply IHc. clear IHc. assumption.
+      clear IHceval1.
+      assert (Hy': exists i, ceval_step st' (WHILE b DO c END) i = Some st'').
+        apply IHceval2 with c; auto. clear IHceval2.
+     inversion Hx' as [ x Hx ]. clear Hx'.
+     inversion Hy' as [ y Hy ]. clear Hy'.
+     exists (S (x + y)). remember (x + y) as i. simpl.
+     apply ceval_step_more with (i2 := i) in Hx; try omega.
+     apply ceval_step_more with (i2 := i) in Hy; try omega.
+     rewrite H. rewrite Hx. rewrite Hy. reflexivity.
+Qed.
 (** [] *)
 
 Theorem ceval_and_ceval_step_coincide: forall c st st',
