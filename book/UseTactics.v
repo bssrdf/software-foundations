@@ -96,7 +96,7 @@ Admitted.
 
 Theorem exists_impl: forall X (P : X -> Prop) (Q : Prop) (R : Prop),
       (forall x, P x -> Q) ->
-      ((exists x : X, P x) -> Q).
+      ((exists x, P x) -> Q).
 Proof.
   introv [x H2]. eauto.
   (* same as [intros X P Q R H1 [x H2].], which is itself short 
