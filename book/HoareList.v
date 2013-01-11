@@ -761,7 +761,22 @@ Definition sum_program_spec := forall l,
   sum_program
   {{ fun st => asnat (st Y) = sum l }}.
 
-(* FILL IN HERE *)
+(*
+  {{ X = l }}
+  Y ::= ANum 0;
+  {{ X = l /\ Y = 0 }} =>
+  {{ Y + (sum X) = sum l }}
+  WHILE (BIsCons (AId X)) DO
+    {{ Y + (sum X) = sum l /\ is_cons X }} =>
+    {{ Y + (head X) + (sum (tail X)) = sum l }}
+    Y ::= APlus (AId Y) (AHead (AId X)) ;
+    {{ Y + (sum (tail X)) = sum l }}
+    X ::= ATail (AId X)
+    {{ Y + (sum X) = sum l }}
+  END.
+  {{ Y + (sum X) = sum l /\ ~ is_cons X }} =>
+  {{ Y = sum l }}
+*)
 (** [] **)
 
 (** **** Exercise: 4 stars (list_reverse) *)
@@ -789,7 +804,46 @@ Proof.
   intros. simpl. apply snoc_equation.
 Qed.
 
-(* FILL IN HERE *)
+Definition list_reverse_program :=
+    (* X = l /\ Y = nil => *)
+    (* rev X ++ Y = rev l *)
+  WHILE BIsCons (AId X) DO
+      (* rev X ++ Y = rev l /\ is_cons X => *)
+      (* rev (tail X) ++ (head X :: Y) = rev l *)
+    Y ::= ACons (AHead (AId X)) (AId Y);
+      (* rev (tail X) ++ Y = rev l *)
+    X ::= ATail (AId X)
+      (* rev X ++ Y = rev l *)
+  END.
+    (* rev X ++ Y = rev l /\ ~ is_cons X => *)
+    (* Y = rev l *)
+
+Theorem list_reverse_correct : forall l : list nat,
+  {{ fun st => aslist (st X) = l /\ aslist (st Y) = [] }}
+  list_reverse_program
+  {{ fun st => aslist (st Y) = rev l }}.
+Proof.
+  intros.
+  eapply hoare_consequence.
+  apply hoare_while with
+    (P := (fun st => rev (aslist (st X)) ++ (aslist (st Y)) = rev l)).
+  * eapply hoare_seq.
+    + apply hoare_asgn.
+    + eapply hoare_consequence_pre.
+      - apply hoare_asgn.
+      - unfold assn_sub, assert_implies, bassn, update; simpl.
+        intros st [H0 H1].
+        destruct (aslist (st X)); inversion H1.
+        rewrite rev_equation in H0.
+        simpl. assumption.
+  * unfold assert_implies. intros st [H0 H1].
+    rewrite -> H0. rewrite -> H1.
+    apply append_nil.
+  * unfold assert_implies, bassn; simpl. intros st [H0 H1].
+    apply not_true_is_false in H1.
+    destruct (aslist (st X)); inversion H1.
+    simpl in H0. assumption.
+Qed.
 (** [] *)
 
 
