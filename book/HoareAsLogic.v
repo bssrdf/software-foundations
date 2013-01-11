@@ -91,7 +91,11 @@ Print sample_proof.
 Theorem hoare_proof_sound : forall P c Q,
   hoare_proof P c Q -> {{P}} c {{Q}}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P c Q H.
+  induction H; eauto using
+    hoare_skip, hoare_asgn, hoare_seq, hoare_if, hoare_while,
+    hoare_consequence, hoare_consequence_pre, hoare_consequence_post.
+Qed.
 (** [] *)
 
 (** We can also use Coq's reasoning facilities to prove metatheorems
